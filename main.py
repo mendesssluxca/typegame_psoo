@@ -20,6 +20,17 @@ pygame.display.set_caption("Jogo de Digitação Rápida")
 # Fonte
 font = pygame.font.Font(None, 36)
 
+# Carregar os wallpapers
+wallpapers = {
+    1: pygame.image.load("assets/fase1.png"),
+    2: pygame.image.load("assets/fase2.png"),
+    3: pygame.image.load("assets/fase3.png"),
+}
+
+# Ajustar o tamanho dos wallpapers para caber na tela
+for phase in wallpapers:
+    wallpapers[phase] = pygame.transform.scale(wallpapers[phase], (WIDTH, HEIGHT))
+
 # Conectar ao banco de dados SQLite
 conn = sqlite3.connect("ranking.db")
 cursor = conn.cursor()
@@ -108,23 +119,28 @@ def draw_hearts(hearts_left):
 
 # Função para desenhar a tela do jogo
 def draw_screen(words, score, phase, user_input):
-    screen.fill(WHITE)
+    # Define o wallpaper com base na fase
+    screen.blit(wallpapers[phase], (0, 0))
 
-    #fase atual
-    phase_text = font.render(f"Fase: {phase}", True, BLACK)
+    # Escolher as cores baseadas na fase
+    falling_word_color = BLACK if phase == 1 else WHITE
+    user_input_color = WHITE if phase in (1, 3) else RED
+
+    # Exibe a fase atual
+    phase_text = font.render(f"Fase: {phase}", True, WHITE)
     screen.blit(phase_text, (10, 10))
 
-    #pontuação
-    score_text = font.render(f"Pontuação: {score}", True, BLACK)
+    # Exibe a pontuação
+    score_text = font.render(f"Pontuação: {score}", True, WHITE)
     screen.blit(score_text, (WIDTH - 200, 10))
 
-    #palavras na tela
+    # Exibe as palavras que estão caindo
     for word in words:
-        word_surface = font.render(word["text"], True, BLACK)
+        word_surface = font.render(word["text"], True, falling_word_color)
         screen.blit(word_surface, (word["x"], word["y"]))
 
-    #entrada do jogador
-    input_surface = font.render(f"Digite: {user_input}", True, RED)
+    # Exibe o texto digitado pelo jogador
+    input_surface = font.render(f"Digite: {user_input}", True, user_input_color)
     screen.blit(input_surface, (WIDTH // 2 - 100, HEIGHT - 50))
 
     
@@ -223,11 +239,11 @@ def game_loop(username):
         if score >= 50 and phase == 1:
             phase = 2
             word_speed = 0.4
-            word_interval = 1500  # Intervalo mais rápido
+            word_interval = 1800  # Intervalo mais rápido
         elif score >= 100 and phase == 2:
             phase = 3
             word_speed = 0.7
-            word_interval = 1200  # Intervalo ainda mais rápido
+            word_interval = 1500  # Intervalo ainda mais rápido
         elif score >= 500 and phase == 3:
             # Exibir mensagem de vitória
             screen.fill(WHITE)
